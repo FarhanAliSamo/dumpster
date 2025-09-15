@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Addon;
 use App\Models\Container;
 use App\Models\Material;
-
+ 
 class StaticController extends Controller
 {
     public function Addons()
