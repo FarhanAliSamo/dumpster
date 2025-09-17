@@ -16,6 +16,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CountyZipImport;
+use Filament\Notifications\Notification;
 
 class ZipCodeResource extends Resource
 {
@@ -47,6 +52,30 @@ class ZipCodeResource extends Resource
                 TextColumn::make('special_price')->label('Special Price')->money('usd', true)->sortable(),
                 TextColumn::make('created_at')->dateTime()->label('Created At')->sortable(),
                 TextColumn::make('updated_at')->dateTime()->label('Updated At')->sortable(),
+            ])
+             ->headerActions([
+                Action::make('import')
+                    ->label('Import Excel/CSV')
+                    ->form([ 
+                        FileUpload::make('file')
+                            ->disk('public')
+                            ->directory('imports')
+                            ->required() 
+                    ])
+                    ->action(function (array $data, $record) {
+                        // $data['file'] will be path like 'imports/filename.xlsx' (on default 'local' disk)
+                        $path =  'storage/' . $data['file'];
+
+                        // dd($path);
+
+                        // Import using Maatwebsite Excel
+                        Excel::import(new CountyZipImport, $path);
+
+                        Notification::make()
+                            ->title('Import completed')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->filters([
                 //
