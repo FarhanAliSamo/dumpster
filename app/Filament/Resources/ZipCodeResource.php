@@ -25,8 +25,9 @@ use Filament\Notifications\Notification;
 class ZipCodeResource extends Resource
 {
     protected static ?string $model = ZipCode::class;
-
+ 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+    protected static ?int $navigationSort = 6;
 
     public static function form(Form $form): Form
     {
@@ -36,7 +37,13 @@ class ZipCodeResource extends Resource
                     ->label('ZIP Code')
                     ->maxLength(10)
                     ->required(),
-                Select::make('county_id')->label('County')->options(County::all()->pluck('name', 'id'))->searchable(),
+                TextInput::make('city')
+                    ->label('City')
+                    ->maxLength(100)
+                    ->required()
+                    ->afterStateUpdated(fn ($state, callable $set) => $set('city', strtoupper($state)))
+                    ->dehydrateStateUsing(fn ($state) => strtoupper($state)),
+                Select::make('county_id')->label('County')->options(County::all()->pluck('name', 'id'))->searchable()->required(),
                 TextInput::make('special_price')->label('Special Price')->numeric()->nullable(),
             ]);
     }
@@ -49,6 +56,7 @@ class ZipCodeResource extends Resource
                 TextColumn::make('id')->label('ID')->sortable(),
                 TextColumn::make('zip')->label('ZIP Code')->sortable()->searchable(),
                 TextColumn::make('county.name')->label('County')->sortable()->searchable(),
+                TextColumn::make('city')->label('City')->sortable()->searchable(),
                 TextColumn::make('special_price')->label('Special Price')->money('usd', true)->sortable(),
                 TextColumn::make('created_at')->dateTime()->label('Created At')->sortable(),
                 TextColumn::make('updated_at')->dateTime()->label('Updated At')->sortable(),

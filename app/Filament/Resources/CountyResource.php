@@ -28,9 +28,10 @@ class CountyResource extends Resource
     protected static ?string $model = County::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
+    protected static ?int $navigationSort = 5;
 
     public static function form(Form $form): Form
-    {
+    { 
         return $form
             ->schema([
                 TextInput::make('name')->label('County Name')->maxLength(255)->required(),

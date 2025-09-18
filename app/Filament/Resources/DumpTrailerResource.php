@@ -23,6 +23,7 @@ class DumpTrailerResource extends Resource
     protected static ?string $model = DumpTrailer::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 4;
 
  public static function form(Form $form): Form
     {

@@ -23,7 +23,7 @@ class ContainerResource extends Resource
     protected static ?string $model = Container::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
+protected static ?int $navigationSort = 2;
     public static function form(Form $form): Form
     {
         return $form

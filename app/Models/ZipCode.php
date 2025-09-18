@@ -9,7 +9,8 @@ class ZipCode extends Model
     protected $fillable = [
         'zip',
         'county_id',
-        'special_price'
+        'special_price',
+        'city'
     ];
     public function county()
     {

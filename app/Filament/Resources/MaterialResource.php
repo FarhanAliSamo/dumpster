@@ -20,6 +20,7 @@ class MaterialResource extends Resource
     protected static ?string $model = Material::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-square-3-stack-3d';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {

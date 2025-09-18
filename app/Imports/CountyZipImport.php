@@ -20,11 +20,12 @@ class CountyZipImport implements ToCollection, WithHeadingRow
             $countyName    = isset($row['county']) ? trim($row['county']) : (isset($row['county_name']) ? trim($row['county_name']) : null);
             $state         = isset($row['state']) ? trim($row['state']) : null;
             $basePrice     = $row['base_price'] ?? null;
+            $city           = isset($row['city']) ? trim((string) $row['city']) : null;
             $zip           = isset($row['zip']) ? trim((string) $row['zip']) : null;
             $specialPrice  = $row['special_price'] ?? null;
 
             // skip invalid rows
-            if (empty($countyName) || empty($zip)) {
+            if (empty($countyName) || empty($zip) || empty($city)) {
                 continue;
             }
 
@@ -47,6 +48,7 @@ class CountyZipImport implements ToCollection, WithHeadingRow
                 ],
                 [
                     'special_price' => $specialPrice,
+                    'city' => $city,
                 ]
             );
         }
