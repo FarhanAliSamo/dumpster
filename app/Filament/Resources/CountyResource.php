@@ -37,26 +37,57 @@ class CountyResource extends Resource
                 TextInput::make('name')->label('County Name')->maxLength(255)->required(),
                 // TextInput::make('state')->label('State')->maxLength(255)->required(),
                 // Select::make('state_id')->label('State')->options(State::all()->pluck('name', 'id'))->searchable()->required(),
+                // Select::make('state_id')
+                //     ->label('State')
+                //     ->relationship('state', 'name')
+                //     ->searchable()
+                //     ->required()
+                //     ->createOptionForm([
+                //         Forms\Components\TextInput::make('name')
+                //             ->label('State Name')
+                //             ->required(),
+                //         Forms\Components\TextInput::make('code')
+                //             ->label('Code (Optional)')
+                //             ->maxLength(10),
+                //     ])
+                //     ->createOptionUsing(function (array $data) {
+                //         $state = \App\Models\State::create([
+                //             'name' => $data['name'],
+                //             'code' => $data['code'] ?? strtoupper(substr($data['name'], 0, 2)),
+                //         ]);
+                //         return $state->getKey();
+                //     }),
                 Select::make('state_id')
                     ->label('State')
                     ->relationship('state', 'name')
+                    ->options(State::query()->pluck('name', 'id')) // show all by default
                     ->searchable()
                     ->required()
                     ->createOptionForm([
                         Forms\Components\TextInput::make('name')
                             ->label('State Name')
-                            ->required(),
+                            ->required()
+                            ->unique(ignoreRecord: true, table: State::class, column: 'name'),
                         Forms\Components\TextInput::make('code')
                             ->label('Code (Optional)')
                             ->maxLength(10),
                     ])
                     ->createOptionUsing(function (array $data) {
-                        $state = \App\Models\State::create([
+                        // Check if already exists (case-insensitive)
+                        $existing = State::whereRaw('LOWER(name) = ?', [strtolower($data['name'])])->first();
+
+                        if ($existing) {
+                            return $existing->getKey(); // return existing id (no duplicate)
+                        }
+
+                        $state = State::create([
                             'name' => $data['name'],
                             'code' => $data['code'] ?? strtoupper(substr($data['name'], 0, 2)),
                         ]);
+
                         return $state->getKey();
-                    }),
+                    })
+                    ->preload(), // show all states instantly
 
                 TextInput::make('base_price')->label('Base Price')->numeric()->required(),
             ]);
