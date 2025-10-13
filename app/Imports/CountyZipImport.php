@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\County;
 use App\Models\ZipCode;
+use App\Models\State;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -29,11 +30,17 @@ class CountyZipImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
+            // 1️⃣ Create or find the state
+            $state = State::firstOrCreate(
+                ['name' => $state],
+                ['code' => strtoupper(substr($state, 0, 2))] // fallback code e.g. "MD"
+            );
+
             // Create or update county. This will update base_price from sheet.
             $county = County::updateOrCreate(
                 [
                     'name'  => $countyName,
-                    'state' => $state,
+                   'state_id' => $state->id,
                 ],
                 [
                     'base_price' => $basePrice,

@@ -8,12 +8,17 @@ class County extends Model
 {
       protected $fillable = [
         'name',
-        'state',
+        'state_id',
         'base_price'
     ];
     //
     public function zipCodes()
     {
         return $this->hasMany(ZipCode::class);
+    }
+
+      public function state()
+    {
+        return $this->belongsTo(State::class);
     }
 }

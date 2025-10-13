@@ -28,7 +28,7 @@ class CountyResource extends Resource
     protected static ?string $model = County::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     public static function form(Form $form): Form
     { 
@@ -47,7 +47,7 @@ class CountyResource extends Resource
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
                 TextColumn::make('name')->label('County Name')->sortable()->searchable(),
-                TextColumn::make('state')->label('State')->sortable()->searchable(),
+                TextColumn::make('state.name')->label('State')->sortable()->searchable(),
                 TextColumn::make('base_price')->label('Base Price')->money('usd', true)->sortable(),
                 TextColumn::make('created_at')->dateTime()->label('Created At')->sortable(),
                 TextColumn::make('updated_at')->dateTime()->label('Updated At')->sortable(),

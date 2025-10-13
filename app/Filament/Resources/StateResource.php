@@ -20,10 +20,11 @@ class StateResource extends Resource
     protected static ?string $model = State::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-     public static function shouldRegisterNavigation(): bool
-    {
-        return false; // Sidebar me hide
-    }
+     protected static ?int $navigationSort = 5;
+    //  public static function shouldRegisterNavigation(): bool
+    // {
+    //     return false; // Sidebar me hide
+    // }
 
     public static function form(Form $form): Form
     {
