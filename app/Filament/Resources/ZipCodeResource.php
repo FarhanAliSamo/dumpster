@@ -57,6 +57,7 @@ class ZipCodeResource extends Resource
                 TextColumn::make('zip')->label('ZIP Code')->sortable()->searchable(),
                 TextColumn::make('county.name')->label('County')->sortable()->searchable(),
                 TextColumn::make('city')->label('City')->sortable()->searchable(),
+                TextColumn::make('county.base_price')->label('Base Price')->sortable()->searchable(),
                 TextColumn::make('special_price')->label('Special Price')->money('usd', true)->sortable(),
                 TextColumn::make('created_at')->dateTime()->label('Created At')->sortable(),
                 TextColumn::make('updated_at')->dateTime()->label('Updated At')->sortable(),

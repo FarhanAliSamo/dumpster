@@ -31,12 +31,33 @@ class CountyResource extends Resource
     protected static ?int $navigationSort = 6;
 
     public static function form(Form $form): Form
-    { 
+    {
         return $form
             ->schema([
                 TextInput::make('name')->label('County Name')->maxLength(255)->required(),
                 // TextInput::make('state')->label('State')->maxLength(255)->required(),
-                Select::make('state')->label('State')->options(State::all()->pluck('name', 'name'))->searchable()->required(),
+                // Select::make('state_id')->label('State')->options(State::all()->pluck('name', 'id'))->searchable()->required(),
+                Select::make('state_id')
+                    ->label('State')
+                    ->relationship('state', 'name')
+                    ->searchable()
+                    ->required()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->label('State Name')
+                            ->required(),
+                        Forms\Components\TextInput::make('code')
+                            ->label('Code (Optional)')
+                            ->maxLength(10),
+                    ])
+                    ->createOptionUsing(function (array $data) {
+                        $state = \App\Models\State::create([
+                            'name' => $data['name'],
+                            'code' => $data['code'] ?? strtoupper(substr($data['name'], 0, 2)),
+                        ]);
+                        return $state->getKey();
+                    }),
+
                 TextInput::make('base_price')->label('Base Price')->numeric()->required(),
             ]);
     }
@@ -55,11 +76,11 @@ class CountyResource extends Resource
             ->headerActions([
                 Action::make('import')
                     ->label('Import Excel/CSV')
-                    ->form([ 
+                    ->form([
                         FileUpload::make('file')
                             ->disk('public')
                             ->directory('imports')
-                            ->required() 
+                            ->required()
                     ])
                     ->action(function (array $data, $record) {
                         // $data['file'] will be path like 'imports/filename.xlsx' (on default 'local' disk)
