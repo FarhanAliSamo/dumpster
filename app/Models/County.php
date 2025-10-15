@@ -8,7 +8,7 @@ class County extends Model
 {
       protected $fillable = [
         'name',
-        'state',
+        'state_id',
         'base_price'
     ];
     //

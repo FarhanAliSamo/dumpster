@@ -28,7 +28,7 @@ class ZipCodeResource extends Resource
     protected static ?string $model = ZipCode::class;
  
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
 
     public static function form(Form $form): Form
     {
@@ -58,11 +58,12 @@ class ZipCodeResource extends Resource
                 TextColumn::make('zip')->label('ZIP Code')->sortable()->searchable(),
                 TextColumn::make('county.name')->label('County')->sortable()->searchable(),
                 TextColumn::make('city')->label('City')->sortable()->searchable(),
+                TextColumn::make('county.base_price')->label('Base Price')->sortable()->searchable(),
                 TextColumn::make('special_price')->label('Special Price')->money('usd', true)->sortable(),
                 TextColumn::make('created_at')->dateTime()->label('Created At')->sortable(),
                 TextColumn::make('updated_at')->dateTime()->label('Updated At')->sortable(),
             ])
-             ->headerActions([
+             ->headerActions([ 
                 Action::make('import')
                     ->label('Import Excel/CSV')
                     ->form([ 
