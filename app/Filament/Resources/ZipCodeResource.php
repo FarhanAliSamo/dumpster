@@ -21,6 +21,7 @@ use Filament\Forms\Components\FileUpload;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\CountyZipImport;
 use Filament\Notifications\Notification;
+use App\Exports\ZipCodeExport;
 
 class ZipCodeResource extends Resource
 {
@@ -83,6 +84,14 @@ class ZipCodeResource extends Resource
                             ->title('Import completed')
                             ->success()
                             ->send();
+                    }),
+                     // ✅ Export Button
+                Action::make('export')
+                    ->label('Export Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $fileName = 'zipcodes_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+                        return Excel::download(new ZipCodeExport, $fileName);
                     }),
             ])
             ->filters([
