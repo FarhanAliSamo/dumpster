@@ -48,8 +48,8 @@ class Profile extends Page implements Forms\Contracts\HasForms
                     TextInput::make('email')
                         ->email()
                         ->required()
-                        ->label('Email')
-                        ->disabled(),
+                        ->label('Email'),
+                        // ->disabled(),
 
                     TextInput::make('password')
                         ->password()
