@@ -14,23 +14,23 @@ class CalculationController extends Controller
 {
     public function finalPrice(Request $request)
     {
-        
-    //     return [
-    //        'message' => 'This is a placeholder response. Calculation logic to be implemented.',
-    //        'input' => $request->all()
-    //    ];
-    //     $request->validate([
-    //         'zip' => 'required|max:10',
-    //         'material_id' => 'required',
-    //         'container_id' => 'required',
-    //         'addons' => 'array' // optional
-    //     ]);
+
+        //     return [
+        //        'message' => 'This is a placeholder response. Calculation logic to be implemented.',
+        //        'input' => $request->all()
+        //    ];
+        //     $request->validate([
+        //         'zip' => 'required|max:10',
+        //         'material_id' => 'required',
+        //         'container_id' => 'required',
+        //         'addons' => 'array' // optional
+        //     ]);
 
 
 
 
         $zip = $request->zip;
-        $materialId = $request->material_id;
+        $materialIds = $request->material_id;
         $containerId = $request->container_id;
         $addons = $request->addons ?? [];
         if (!is_array($addons)) {
@@ -45,7 +45,7 @@ class CalculationController extends Controller
                 'error' => 'Invalid ZIP code'
             ], 422);
         }
- 
+
         // 2. ZIP special price check karo
         $basePrice = null;
 
@@ -58,8 +58,9 @@ class CalculationController extends Controller
         // 3. Container price
         $containerPrice = Container::findOrFail($containerId)->price ?? 0;
 
-        // 4. Material modifier (agar required ho to)
-        $materialPrice = Material::findOrFail($materialId)->modifier_price ?? 0;
+
+        // 4 Materials price (sum of all modifiers)
+        $materialPrice = Material::whereIn('id', $materialIds)->sum('modifier_price');
 
         // 5. Add-ons price
         $addonsPrice = Addon::whereIn('id', $addons)->sum('price');
@@ -67,13 +68,15 @@ class CalculationController extends Controller
         // 6. Final calculation
         $totalPrice = $basePrice + $containerPrice + $materialPrice + $addonsPrice;
 
-        return response()->json([
+         return response()->json([
             'total_price' => $totalPrice,
             'breakdown' => [
                 'base_price' => $basePrice,
                 'container_price' => $containerPrice,
-                'material_price' => $materialPrice,
-                'addons_price' => $addonsPrice
+                'materials_total' => $materialPrice,
+                'addons_total' => $addonsPrice,
+                'materials_count' => count($materialIds),
+                'addons_count' => count($addons),
             ],
         ]);
     }
