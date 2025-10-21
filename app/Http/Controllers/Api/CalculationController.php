@@ -5,40 +5,28 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ZipCode;
-use App\Models\County;
 use App\Models\Container;
 use App\Models\Material;
 use App\Models\Addon;
+use App\Models\State;
 
 class CalculationController extends Controller
 {
     public function finalPrice(Request $request)
     {
-
-        //     return [
-        //        'message' => 'This is a placeholder response. Calculation logic to be implemented.',
-        //        'input' => $request->all()
-        //    ];
-        //     $request->validate([
-        //         'zip' => 'required|max:10',
-        //         'material_id' => 'required',
-        //         'container_id' => 'required',
-        //         'addons' => 'array' // optional
-        //     ]);
-
-
-
-
         $zip = $request->zip;
         $materialIds = $request->material_id;
         $containerId = $request->container_id;
         $addons = $request->addons ?? [];
+
         if (!is_array($addons)) {
             $addons = [$addons];
         }
 
-        // 1. ZIP code se county nikaalo
-        $zipRecord = ZipCode::where('zip', $zip)->with('county')->first();
+        // 1️⃣ ZIP code & County + State fetch
+        $zipRecord = ZipCode::where('zip', $zip)
+            ->with(['county.state'])
+            ->first();
 
         if (!$zipRecord) {
             return response()->json([
@@ -46,29 +34,31 @@ class CalculationController extends Controller
             ], 422);
         }
 
-        // 2. ZIP special price check karo
-        $basePrice = null;
+        // 2️⃣ Base price logic
+        $basePrice = $zipRecord->special_price ?? ($zipRecord->county->base_price ?? 0);
 
-        if ($zipRecord->special_price) {
-            $basePrice = $zipRecord->special_price; // special ZIP price
-        } else {
-            $basePrice = $zipRecord->county->base_price ?? 0; // county price
-        }
+        // 3️⃣ Container details
+        $container = Container::findOrFail($containerId);
+        $containerPrice = $container->price ?? 0;
 
-        // 3. Container price
-        $containerPrice = Container::findOrFail($containerId)->price ?? 0;
+        // 4️⃣ Material details
+        $materials = Material::whereIn('id', $materialIds)->get(['id', 'name', 'price_modifier']);
+        $materialPrice = $materials->sum('price_modifier');
 
+        // 5️⃣ Add-ons details
+        $addonsList = Addon::whereIn('id', $addons)->get(['id', 'name', 'price']);
+        $addonsPrice = $addonsList->sum('price');
 
-        // 4 Materials price (sum of all modifiers)
-        $materialPrice = Material::whereIn('id', $materialIds)->sum('modifier_price');
-
-        // 5. Add-ons price
-        $addonsPrice = Addon::whereIn('id', $addons)->sum('price');
-
-        // 6. Final calculation
+        // 6️⃣ Final total
         $totalPrice = $basePrice + $containerPrice + $materialPrice + $addonsPrice;
 
-         return response()->json([
+        // 7️⃣ County & State info
+        $county = $zipRecord->county;
+        $state = $county->state ?? null;
+ 
+
+        // 8️⃣ Response
+        return response()->json([
             'total_price' => $totalPrice,
             'breakdown' => [
                 'base_price' => $basePrice,
@@ -78,6 +68,31 @@ class CalculationController extends Controller
                 'materials_count' => count($materialIds),
                 'addons_count' => count($addons),
             ],
+            'region' => [
+                'zip' => $zipRecord->zip,
+                'city' => $zipRecord->city,
+                'special_price' => $zipRecord->special_price,
+                'county' => [
+                    'id' => $county->id,
+                    'name' => $county->name,
+                    'base_price' => $county->base_price,
+                ],
+                'state' => $state ? [
+                    'id' => $state->id,
+                    'name' => $state->name,
+                    'code' => $state->code ?? null,
+                ] : null,
+            ],
+            'details' => [
+                'container' => [
+                    'id' => $container->id,
+                    'name' => $container->size_name ?? null,
+                    'price' => $containerPrice,
+                    'description' => $container->description ?? null,
+                ],
+                'materials' => $materials,
+                'addons' => $addonsList,
+            ]
         ]);
     }
 }

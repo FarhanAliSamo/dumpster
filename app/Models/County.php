@@ -16,7 +16,7 @@ class County extends Model
     {   
         return $this->hasMany(ZipCode::class);
     }
-     // ✅ Add this relationship
+ 
     public function state()
     {
         return $this->belongsTo(State::class);
