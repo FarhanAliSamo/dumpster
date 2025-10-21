@@ -11,7 +11,7 @@ class County extends Model
         'state_id',
         'base_price'
     ];
-    //
+    // Relationships
     public function zipCodes()
     {   
         return $this->hasMany(ZipCode::class);
