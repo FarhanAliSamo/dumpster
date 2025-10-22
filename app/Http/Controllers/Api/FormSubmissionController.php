@@ -27,7 +27,7 @@ class FormSubmissionController extends Controller
             // Delivery
             'delivery_date' => 'required|date',
             'delivery_preference' => 'nullable|in:AM,PM',
-            'expected_rental_days' => 'required|integer',
+            'expected_rental_days' => 'required|string',
             'property_type' => 'nullable|string|max:100',
             'street_address' => 'nullable|string|max:255',
             'city' => 'required|string|max:100',
