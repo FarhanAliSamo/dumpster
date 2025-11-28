@@ -20,7 +20,7 @@ class CalculationController extends Controller
         $addons = $request->addons ?? [];
 
         if (!is_array($addons)) {
-            $addons = [$addons];
+            $addons = [$addons]; 
         }
 
         // 1️⃣ ZIP code & County + State fetch

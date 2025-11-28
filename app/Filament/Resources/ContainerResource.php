@@ -30,7 +30,8 @@ protected static ?int $navigationSort = 2;
             ->schema([
                 TextInput::make('size_name')->label('Size Name')->required(),
                 TextInput::make('price')->label('Price')->nullable()->numeric(),
-                MarkdownEditor::make('description')->label('Description')->required()->columnSpan(2),
+                MarkdownEditor::make('weight')->label('Weight Description')->required()->columnSpan(2),
+                MarkdownEditor::make('rental')->label('Rental Description')->required()->columnSpan(2),
                 FileUpload::make('image')
                     ->label('Image')
                     ->image()
@@ -61,7 +62,8 @@ protected static ?int $navigationSort = 2;
                 ImageColumn::make('image')->label('Image'),
                 TextColumn::make('size_name')->label('Size Name')->sortable()->searchable(),
                 TextColumn::make('price')->label('Price')->money('usd', true)->sortable()->searchable(),
-                TextColumn::make('description')->label('Description')->limit(50)->wrap()->sortable()->searchable(),
+                TextColumn::make('weight')->label('Weight Description')->limit(50)->wrap()->sortable()->searchable(),
+                TextColumn::make('rental')->label('Rental Description')->limit(50)->wrap()->sortable()->searchable(),
                 TextColumn::make('created_at')->label('Created At')->dateTime()->sortable(),
                 TextColumn::make('updated_at')->label('Updated At')->dateTime()->sortable(),
             ])
