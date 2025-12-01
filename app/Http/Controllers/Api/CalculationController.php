@@ -42,12 +42,15 @@ class CalculationController extends Controller
         $basePrice = $zipRecord->special_price ?? ($zipRecord->county->base_price ?? 0);
 
         // 3️⃣ Container details
+        $containerName="";
         if($special==0){
         $container = Container::findOrFail($containerId);
         $containerPrice = $container->base_price;
+        $containerName=$container->size_name;
         }
         elseif($special==1){
             $container = ContainerPrice::findOrFail($containerId);
+             $containerName=$container->container->size_name;
             if($container->zip_price){
             $containerPrice = $container->zip_price ?? 0;
             }
@@ -121,7 +124,7 @@ class CalculationController extends Controller
             'details' => [
                 'container' => [
                     'id' => $container->id,
-                    'name' => $container->size_name ?? null,
+                    'name' => $containerName ?? null,
                     'price' => $containerPrice,
                     'weight' => $weight,
                     'rental' => $rental,
