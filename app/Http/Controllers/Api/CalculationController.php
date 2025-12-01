@@ -8,15 +8,19 @@ use App\Models\ZipCode;
 use App\Models\Container;
 use App\Models\Material;
 use App\Models\Addon;
+use App\Models\ContainerPrice;
 use App\Models\State;
 
 class CalculationController extends Controller
 {
     public function finalPrice(Request $request)
     {
+
+        //  return response()->json($request->all(), 200);
         $zip = $request->zip;
         $materialIds = $request->material_id;
         $containerId = $request->container_id;
+        $special = $request->special;
         $addons = $request->addons ?? [];
 
         if (!is_array($addons)) {
@@ -38,10 +42,23 @@ class CalculationController extends Controller
         $basePrice = $zipRecord->special_price ?? ($zipRecord->county->base_price ?? 0);
 
         // 3️⃣ Container details
+        if($special==0){
         $container = Container::findOrFail($containerId);
-        $containerPrice = $container->price ?? 0;
+        $containerPrice = $container->base_price;
+        }
+        elseif($special==1){
+            $container = ContainerPrice::findOrFail($containerId);
+            if($container->zip_price){
+            $containerPrice = $container->zip_price ?? 0;
+            }
 
-        // 4️⃣ Material details
+        else if ($container->county_price){
+            $containerPrice = $container->county_price ?? 0;
+        }
+        else{
+            $containerPrice = $container->base_price ?? 0;    
+        }    }    
+            // 4️⃣ Material details
         $materials = Material::whereIn('id', $materialIds)->get(['id', 'name', 'price_modifier']);
         $materialPrice = $materials->sum('price_modifier');
 
@@ -55,8 +72,26 @@ class CalculationController extends Controller
         // 7️⃣ County & State info
         $county = $zipRecord->county;
         $state = $county->state ?? null;
- 
-
+        $weight ="";
+        $rental ="";
+         if($container->weight_zip){
+            $weight = $container->weight_zip;
+         }
+         else if ($container->weight_county){
+            $weight = $container->weight_county;
+         }
+         else{
+            $weight = $container->weight;
+         }
+         if($container->rental_zip){
+            $rental = $container->rental_zip;
+         }
+         else if ($container->rental_county){
+            $rental = $container->rental_county;
+         }
+         else{
+            $rental = $container->rental;
+         }
         // 8️⃣ Response
         return response()->json([
             'total_price' => $totalPrice,
@@ -88,7 +123,8 @@ class CalculationController extends Controller
                     'id' => $container->id,
                     'name' => $container->size_name ?? null,
                     'price' => $containerPrice,
-                    'description' => $container->description ?? null,
+                    'weight' => $weight,
+                    'rental' => $rental,
                 ],
                 'materials' => $materials,
                 'addons' => $addonsList,
