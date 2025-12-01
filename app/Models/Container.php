@@ -15,7 +15,7 @@ class Container extends Model
         'image',
         'weight',
         'rental',
-        'price',
+        'base_price',
     ];
 
     // // 🔗 One container → many pricing rules
