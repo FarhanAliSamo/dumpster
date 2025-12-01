@@ -70,10 +70,10 @@ class ContainerPriceResource extends Resource
                 Tables\Columns\TextColumn::make('zip_price'),
                 Tables\Columns\TextColumn::make('county_price'),
                 Tables\Columns\TextColumn::make('base_price'),
-                Tables\Columns\TextColumn::make('weight_zip')->label('Weight Limit (Zip)'),
-                Tables\Columns\TextColumn::make('weight_county')->label('Weight Limit (County)'),
-                Tables\Columns\TextColumn::make('rental_zip')->label('Rental Price (Zip)'),
-                Tables\Columns\TextColumn::make('rental_zip')->label('Rental Price (County)'),
+                Tables\Columns\TextColumn::make('weight_zip')->label('Weight Limit Description (Zip)'),
+                Tables\Columns\TextColumn::make('weight_county')->label('Weight Limit Description (County)'),
+                Tables\Columns\TextColumn::make('rental_zip')->label('Rental Description (Zip)'),
+                Tables\Columns\TextColumn::make('rental_county')->label('Rental Description (County)'),
             ])
             ->filters([])
             ->actions([
