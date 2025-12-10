@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Filament\Resources;
+use Filament\Forms\Get;
+use Closure;
+use Illuminate\Validation\Rule;
 
 use App\Filament\Resources\ContainerPriceResource\Pages;
 use App\Filament\Resources\ContainerPriceResource\RelationManagers;
@@ -22,42 +25,117 @@ class ContainerPriceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
+public static function form(Form $form): Form
+{
+    return $form
+        ->schema([
 
-                Forms\Components\Select::make('container_id')
-                    ->relationship('container', 'size_name')
-                    ->required(),
+            Forms\Components\Select::make('container_id')
+                ->relationship('container', 'size_name')
+                ->required()
+                ->live(), // needed for duplicate checks + dependent fields
 
-                Forms\Components\Select::make('county_id')
-                    ->relationship('county', 'name')->options(County::all()->pluck('name', 'id'))
-                    ->searchable(),
+            Forms\Components\Select::make('county_id')
+                ->label('County')
+                ->options(County::query()->pluck('name', 'id'))
+                ->searchable()
+                ->live()
+                ->rules([
+                    fn (Get $get, ?ContainerPrice $record): Closure =>
+                        function (string $attribute, $value, Closure $fail) use ($get, $record) {
+                            // No county selected → nothing to validate
+                            if (empty($value)) {
+                                return;
+                            }
+
+                            // We must have a container to check uniqueness
+                            $containerId = $get('container_id');
+                            if (empty($containerId)) {
+                                return;
+                            }
+
+                            $query = ContainerPrice::query()
+                                ->where('container_id', $containerId)
+                                ->where('county_id', $value);
+
+                            // Ignore current record on edit
+                            if ($record && $record->exists) {
+                                $query->whereKeyNot($record->id);
+                            }
+
+                            if ($query->exists()) {
+                                $fail('A price for this container and county already exists.');
+                            }
+                        },
+                ]),
+
+            Forms\Components\Select::make('zip_code_id')
+                ->label('Zip Code (optional)')
+                ->options(ZipCode::query()->pluck('zip', 'id'))
+                ->searchable()
+                ->live()
+                ->rules([
+                    fn (Get $get, ?ContainerPrice $record): Closure =>
+                        function (string $attribute, $value, Closure $fail) use ($get, $record) {
+                            // No zip selected → nothing to validate
+                            if (empty($value)) {
+                                return;
+                            }
+
+                            $containerId = $get('container_id');
+                            if (empty($containerId)) {
+                                return;
+                            }
+
+                            $query = ContainerPrice::query()
+                                ->where('container_id', $containerId)
+                                ->where('zip_code_id', $value);
+
+                            // Ignore current record on edit
+                            if ($record && $record->exists) {
+                                $query->whereKeyNot($record->id);
+                            }
+
+                            if ($query->exists()) {
+                                $fail('A price for this container and ZIP code already exists.');
+                            }
+                        },
+                ]),
+
+            // COUNTY FIELDS (only active when county selected)
+            Forms\Components\TextInput::make('county_price')
+                ->numeric()
+                ->visible(fn (Get $get): bool => filled($get('county_id')))
+                ->required(fn (Get $get): bool => filled($get('county_id'))),
+
+            Forms\Components\Textarea::make('weight_county')
+                ->label('Weight Limit Description for County (optional)')
+                ->visible(fn (Get $get): bool => filled($get('county_id'))),
+
+            Forms\Components\Textarea::make('rental_county')
+                ->label('Rental Price Description for County (optional)')
+                ->visible(fn (Get $get): bool => filled($get('county_id'))),
+
+            // ZIP FIELDS (only active when zip selected)
+            Forms\Components\TextInput::make('zip_price')
+                ->numeric()
+                ->visible(fn (Get $get): bool => filled($get('zip_code_id')))
+                ->required(fn (Get $get): bool => filled($get('zip_code_id'))),
+
+            Forms\Components\Textarea::make('weight_zip')
+                ->label('Weight Limit Description for Zip Code (optional)')
+                ->visible(fn (Get $get): bool => filled($get('zip_code_id'))),
+
+            Forms\Components\Textarea::make('rental_zip')
+                ->label('Rental Price Description for Zip Code (optional)')
+                ->visible(fn (Get $get): bool => filled($get('zip_code_id'))),
+        ]);
+}
 
 
-                Forms\Components\Select::make('zip_code_id')
-                    ->label('Zip Code (optional)') 
-                    ->options(ZipCode::all()->pluck('zip','id'))
-                    ->searchable(), 
 
-                // Forms\Components\TextInput::make('zip_code')
-                //     ->label('Zip Code (optional)')
-                //     ->maxLength(10),
 
-                // Forms\Components\TextInput::make('base_price')->numeric(),
-                Forms\Components\TextInput::make('county_price')->numeric(),
-                Forms\Components\TextInput::make('zip_price')->numeric(),
 
-                Forms\Components\Textarea::make('weight_zip')
-                ->label('Weight Limit Description for Zip Code (optional)'),
-                Forms\Components\Textarea::make('rental_zip')->label('Rental Price Description for Zip Code (optional)'),
-
-                 Forms\Components\Textarea::make('weight_county')
-                ->label('Weight Limit Description for County (optional)'),
-                Forms\Components\Textarea::make('rental_county')->label('Rental Price Description for County (optional)'),
-            ]);
-    }
 
     public static function table(Table $table): Table
     {
